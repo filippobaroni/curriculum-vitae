@@ -58,7 +58,10 @@
 \setlength{\cv@headerheight}{4cm}
 \newcommand{\setheaderheight}[1]{\setlength{\cv@headerheight}{#1}}
 
-\def\cv@eventlist@ratio{.3}
+\def \cv@sidebarratio{.3}
+\newcommand{\setsidebarratio}[1]{\def\cv@sidebarratio{#1}}
+
+\def\cv@eventlist@ratio{.35}
 \newcommand{\seteventlistratio}[1]{\def\cv@eventlist@ratio{#1}}
 
 % Colors
@@ -81,7 +84,7 @@
 
 % Body
 \newcommand{\cv@paracolsetup}{
-\columnratio{.3}
+\columnratio{\cv@sidebarratio}
 \ifbool{cv@oneside}{}{\twosided[pcb]}
 \setlength{\columnsep}{1.5cm}
 \backgroundcolor{c[0](10000pt,10000pt)(.5\columnsep,10000pt)}{sidebar}
@@ -95,10 +98,18 @@
 \titleformat{\section}{\Large\bfseries\raggedright\scshape\color{section}}{}{0em}{}[\titleline{\tikz{\draw[line width=1pt,path fading=east,draw=sectionrule] (0,0) -- (\linewidth,0);}}]
 \titleformat{\subsection}{\large\bfseries\raggedright\color{subsection}}{}{0em}{}
 
-% Infofields
+% Icons
 \newcommand{\icontext}[2]{\mbox{\parbox[t][.9\baselineskip][t]{1.2\baselineskip}{\centering\textcolor{icons}{#1}}\hspace{.4\baselineskip}#2}}
+\newcommand{\iconlongtext}[2]{\icontext{#1}{\begin{minipage}[t]{\dimexpr\linewidth-1.2\baselineskip}\raggedright#2\end{minipage}}}
+
+\definecolor{gold}{HTML}{FFD700}
+\definecolor{silver}{HTML}{C0C0C0}
+\definecolor{bronze}{HTML}{CD7F32}
+\newcommand{\medal}[2][]{\iconlongtext{\ifstrempty{#1}{\faMedal}{\textcolor{#1}{\faMedal}}}{#2}}
+
+% Infofields
 \newcommand{\cv@infofield}[3][]{%
-\icontext{#2}{\ifstrequal{#1}{}{#3}{\href{#1}{#3}}}%
+\iconlongtext{#2}{\ifstrempty{#1}{#3}{\href{#1}{#3}}}%
 \vspace{.2em}\newline%
 }
 \newcommand{\email}[1]{\cv@infofield[mailto:#1]{\faAt}{#1}}
@@ -109,20 +120,30 @@
 \newcommand{\itemtitle}[1]{\textbf{#1}}
 
 \newboolean{cv@eventlist@first}
+\newboolean{cv@eventlist@firstleftitem}
 \newenvironment{eventlist}{\setboolean{cv@eventlist@first}{true}}{}
-\newcommand{\when}[1]{\icontext{\faCalendar}{#1}\vspace{.2em}\newline}
-\newcommand{\where}[1]{\icontext{\faMapMarker*}{#1}\vspace{.2em}\newline}
-\newcommand{\online}[1]{\icontext{\faGlobe}{#1}\vspace{.2em}\newline}
+\newcommand{\cv@eventlist@leftitem}[2]{%
+\ifbool{cv@eventlist@firstleftitem}{}{\newline}%
+\setboolean{cv@eventlist@firstleftitem}{false}%
+\iconlongtext{#1}{#2}%
+\vspace{.2em}%
+}
+\newcommand{\when}[1]{\cv@eventlist@leftitem{\faCalendar}{#1}}
+\newcommand{\where}[1]{\cv@eventlist@leftitem{\faMapMarker*}{#1}}
+\newcommand{\online}[1]{\cv@eventlist@leftitem{\faGlobe}{#1}}
 \newcommand{\event}[3]{%
+\setboolean{cv@eventlist@firstleftitem}{true}
 \ifbool{cv@eventlist@first}{}{\vspace{.5em}\titlerule{\tikz\draw[draw=rule,line width=.5pt,densely dashed,path fading=east] (0,0) -- (\linewidth,0);}}
-\begin{minipage}[t]{\cv@eventlist@ratio\linewidth}
-\parbox{0pt}{}#1\vspace{-\baselineskip}
-\end{minipage}
+\begin{minipage}[t]{\dimexpr\cv@eventlist@ratio\linewidth-1em}
+\parbox{0pt}{}#1\vspace{.5em}
+\end{minipage}\hspace{1em}
 \begin{minipage}[t]{\fpeval{1-\cv@eventlist@ratio}\linewidth}
 \itemtitle{#2}\ifstrempty{#3}{}{\vspace{.2em}\newline #3\vspace{.5em}}
 \end{minipage}
 \setboolean{cv@eventlist@first}{false}
 }
+
+% Misc
 
 % Final
 \RequirePackage{paracol}
