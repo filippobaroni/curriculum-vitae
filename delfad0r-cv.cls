@@ -36,6 +36,12 @@
 %\ifbool{cv@sideheader}{}{\vspace*{\cv@headerheight}\vspace*{-3\baselineskip}}
 \cv@paracolsetup\begin{paracol}{2}
 \ifbool{cv@sideheader}{\cv@makesideheader{}}{\cv@makeheader{}}
+\@ifundefinedcolor{sidebar section}{\colorlet{sidebar section}{body section}}{}
+\@ifundefinedcolor{sidebar subsection}{\colorlet{sidebar subsection}{body subsection}}{}
+\@ifundefinedcolor{sidebar}{\colorlet{sidebar}{body}}{}
+\@ifundefinedcolor{sidebar secondary}{\colorlet{sidebar secondary}{body secondary}}{}
+\@ifundefinedcolor{sidebar rule}{\colorlet{sidebar rule}{body rule}}{}
+\@ifundefinedcolor{sidebar sectionrule}{\colorlet{sidebar sectionrule}{body sectionrule}}{}
 }
 \AtEndDocument{\end{paracol}}
 
@@ -68,8 +74,6 @@
 \setlength{\parindent}{0cm}
 
 \newlength{\cv@headerheight}
-\setlength{\cv@headerheight}{3cm}
-\newcommand{\setheaderheight}[1]{\setlength{\cv@headerheight}{#1}}
 
 \newlength{\cv@photo@diameter}
 \setlength{\cv@photo@diameter}{3cm}
@@ -81,20 +85,22 @@
 \def\cv@eventlist@ratio{.35}
 \newcommand{\seteventlistratio}[1]{\def\cv@eventlist@ratio{#1}}
 
+\newboolean{cv@onlinefetch}
+\ifthenelse{\pdfshellescape=1}{\setboolean{cv@onlinefetch}{true}}{\setboolean{cv@onlinefetch}{false}}
+\newcommand{\setonlinefetch}[1]{\setboolean{cv@onlinefetch}{#1}}
+
 % Colors
-\colorlet{headerbg}{gray}
-\colorlet{sidebarbg}{gray!20}
-\colorlet{bodybg}{white}
-\colorlet{header}{red}
-\colorlet{section}{olive}
-\colorlet{subsection}{green}
-\colorlet{sidebar}{red}
-\colorlet{sidebar secondary}{orange}
-\colorlet{body}{violet}
-\colorlet{body secondary}{purple}
-\colorlet{sectionrule}{blue!50!black}
-\colorlet{rule}{gray}
-\colorlet{icons}{blue}
+\definecolor{headerbg}{RGB}{150,150,150}
+\definecolor{sidebarbg}{RGB}{235,235,235}
+\definecolor{bodybg}{RGB}{255,255,255}
+\definecolor{header}{RGB}{0,0,0}
+\definecolor{body section}{RGB}{0,0,0}
+\definecolor{body subsection}{RGB}{0,0,0}
+\definecolor{body}{RGB}{0,0,0}
+\definecolor{body secondary}{RGB}{80,80,80}
+\definecolor{body sectionrule}{RGB}{0,0,0}
+\definecolor{body rule}{RGB}{150,150,150}
+\definecolor{icons}{RGB}{100,100,100}
 
 % Header
 \tikzset{
@@ -155,15 +161,36 @@ cv/header text/.pic={
 \backgroundcolor{c[0](10000pt,10000pt)(.5\columnsep,10000pt)}{sidebarbg}
 \backgroundcolor{c[1](.5\columnsep,10000pt)(10000pt,10000pt)}{bodybg}
 }
-\newenvironment{sidebar}{\begin{leftcolumn}\colorlet{secondary}{sidebar secondary}\color{sidebar}\ifbool{cv@sideheader}{}{\vspace*{\cv@headerheight}\vspace*{-3.5\baselineskip}}}{\end{leftcolumn}}
-\newenvironment{body}{\begin{rightcolumn}\colorlet{secondary}{body secondary}\color{body}\ifbool{cv@sideheader}{}{\vspace*{\cv@headerheight}\vspace*{-3.5\baselineskip}}}{\end{rightcolumn}}
+\newenvironment{sidebar}{%
+\begin{leftcolumn}
+\ifbool{cv@sideheader}{}{\vspace*{\cv@headerheight}\vspace*{-3.5\baselineskip}}
+\colorlet{main}{sidebar}
+\colorlet{secondary}{sidebar secondary}
+\colorlet{rule}{sidebar rule}
+\colorlet{sectionrule}{sidebar sectionrule}
+\colorlet{section}{sidebar section}
+\colorlet{subsection}{sidebar subsection}
+\color{main}
+}{\end{leftcolumn}}
+\newenvironment{body}{%
+\begin{rightcolumn}
+\ifbool{cv@sideheader}{}{\vspace*{\cv@headerheight}\vspace*{-3.5\baselineskip}}
+\colorlet{main}{body}
+\colorlet{secondary}{body secondary}
+\colorlet{rule}{body rule}
+\colorlet{sectionrule}{body sectionrule}
+\colorlet{section}{body section}
+\colorlet{subsection}{body subsection}
+\color{main}
+}{\end{rightcolumn}}
 
 % Sections
 \RequirePackage{titlesec}
-\titleformat{\section}{\Large\bfseries\raggedright\scshape\color{section}}{}{0em}{}[\titleline{\tikz{\draw[line width=1pt,path fading=east,draw=sectionrule] (0,0) -- (\linewidth,0);}}]
+\tikzset{
+cv/sectionrule/.style={line cap=round,line width=1.5pt,path fading=east,draw=sectionrule},
+}
+\titleformat{\section}{\Large\bfseries\raggedright\scshape\color{section}}{}{0em}{}[\titleline{\tikz{\draw[cv/sectionrule] (0,0) -- (\linewidth,0);}}]
 \titleformat{\subsection}{\large\bfseries\raggedright\color{subsection}}{}{0em}{}
-%\titlespacing*{\section}{0pt}{.5em}{1em}
-%\titlespacing*{\subsection}{0pt}{.5em}{.5em}
 \let\cv@oldsection\section
 \renewcommand{\section}[2][]{\cv@oldsection{\ifstrempty{#1}{#2}{\icontext{#1}{#2}}}}
 
@@ -185,13 +212,16 @@ cv/header text/.pic={
 \newcommand{\phone}[1]{\cv@infofield{\faPhone}{#1}}
 \newcommand{\location}[1]{\cv@infofield{\faMapMarker*}{#1}}
 \newcommand{\birthdate}[1]{\cv@infofield{\faCalendar}{#1}}
-\newcommand{\linkedin}[1]{\cv@infofield[https://www.linkedin.com/in/#1]{\faLinkedin}{\cv@name{} \textcolor{secondary}{on LinkedIn}}}
-\newcommand{\github}[1]{\cv@infofield[https://github.com/#1]{\faGithub}{#1 \textcolor{secondary}{on GitHub}}}
-\newcommand{\codeforces}[1]{\cv@infofield[https://codeforces.com/profile/#1]{\faLaptopCode}{\ifnum\pdfshellescape=1{\input{|"./get_codeforces.py #1"}}\else{#1}\fi{} \textcolor{secondary}{on Codeforces}}}
-\newcommand{\atcoder}[1]{\cv@infofield[https://atcoder.jp/user/#1]{\faLaptopCode}{\ifnum\pdfshellescape=1{\input{|"./get_atcoder.py #1"}}\else{#1}\fi{} \textcolor{secondary}{on AtCoder}}}
+\newcommand{\linkedin}[1]{\cv@infofield[https://www.linkedin.com/in/#1]{\faLinkedin}{\cv@name{} {on LinkedIn}}}
+\newcommand{\github}[1]{\cv@infofield[https://github.com/#1]{\faGithub}{#1 {on GitHub}}}
+\newcommand{\codeforces}[1]{\cv@infofield[https://codeforces.com/profile/#1]{\faLaptopCode}{\ifbool{cv@onlinefetch}{\input{|"./get_codeforces.py #1"}}{#1} {on Codeforces}}}
+\newcommand{\atcoder}[1]{\cv@infofield[https://atcoder.jp/user/#1]{\faLaptopCode}{\ifbool{cv@onlinefetch}{\input{|"./get_atcoder.py #1"}}{#1} {on AtCoder}}}
 
 % Lists
 \newcommand{\itemtitle}[1]{\textbf{#1}}
+\tikzset{
+cv/rule/.style={draw=rule,line width=.5pt,densely dashed,path fading=east}
+}
 
 \newboolean{cv@eventlist@first}
 \newboolean{cv@eventlist@firstleftitem}
@@ -207,7 +237,7 @@ cv/header text/.pic={
 \newcommand{\online}[2][]{\cv@eventlist@leftitem{\faGlobe}{\ifstrempty{#1}{#2}{\href{#1}{#2}}}}
 \newcommand{\event}[3]{%
 \setboolean{cv@eventlist@firstleftitem}{true}
-\ifbool{cv@eventlist@first}{}{\vspace{.5em}\titlerule{\tikz\draw[draw=rule,line width=.5pt,densely dashed,path fading=east] (0,0) -- (\linewidth,0);}}
+\ifbool{cv@eventlist@first}{}{\vspace{.5em}\titlerule{\tikz\draw[cv/rule] (0,0) -- (\linewidth,0);}}
 \setboolean{cv@eventlist@first}{false}
 \begin{minipage}[t]{\dimexpr\cv@eventlist@ratio\linewidth-2em}
 \parbox{0pt}{}#1\vspace{.2em}
@@ -220,7 +250,7 @@ cv/header text/.pic={
 \newboolean{cv@referencelist@first}
 \newenvironment{referencelist}{\setboolean{cv@referencelist@first}{true}}{\vspace{-.6em}}
 \newcommand{\reference}[2]{%
-\ifbool{cv@referencelist@first}{}{\vspace{.5em}\titlerule{\tikz\draw[draw=rule,line width=.5pt,densely dashed,path fading=east] (0,0) -- (\linewidth,0);}}
+\ifbool{cv@referencelist@first}{}{\vspace{.5em}\titlerule{\tikz\draw[cv/rule] (0,0) -- (\linewidth,0);}}
 \setboolean{cv@referencelist@first}{false}
 \itemtitle{#1}\vspace{.2em}\newline \begin{minipage}[t]{\columnwidth}#2\vspace{-\baselineskip}\vspace*{.5em}\end{minipage}
 }
