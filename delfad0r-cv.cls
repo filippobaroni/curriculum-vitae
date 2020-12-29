@@ -74,6 +74,7 @@
 \setlength{\parindent}{0cm}
 
 \newlength{\cv@headerheight}
+\newcommand{\getheaderheight}{\cv@headerheight}
 
 \newlength{\cv@photo@diameter}
 \setlength{\cv@photo@diameter}{3cm}
@@ -110,7 +111,8 @@ cv/photo/.pic={\fill[black] circle (.5*\cv@photo@diameter);},
 cv/header text/.pic={
 \node[cv/name,anchor=north west,align=left,text width={.5*(#1)}] (name) at (0,0) {\cv@name};
 \node[cv/description,below=.8em of name.south west,align=left,anchor=north west,text width=#1] (description) {\cv@description};
-}
+},
+cv/header decoration/.code={},
 }
 \newcommand{\cv@makeheader}{
 \nointerlineskip\begin{tikzpicture}[overlay,remember picture]
@@ -128,9 +130,11 @@ cv/header text/.pic={
 \pic[local bounding box=header text] at ($(current page.north west)+(\cv@margin,-\cv@margin)$) {cv/header text={\textwidth}};
 \coordinate[below=1em of header text] (header end);
 }
-\scoped[on background layer]\fill[headerbg] (current page.north west) rectangle (current page.east|-header end);
 \tikzmath{coordinate \p, \q; \p = (current page.north); \q = (header end);\h = \py-\qy;}
 \setlength{\cv@headerheight}{\h pt}\global\cv@headerheight=\cv@headerheight
+%\scoped[on background layer]\fill[headerbg] (current page.north west) rectangle (current page.east|-header end);
+\scoped[on background layer]\node[rectangle,fill=headerbg,minimum width=\paperwidth,minimum height=\cv@headerheight,anchor=north] (header) at (current page.north) {};
+\tikzset{cv/header decoration}
 \end{tikzpicture}
 }
 \newcommand{\cv@makesideheader}{

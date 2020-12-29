@@ -2,6 +2,8 @@
 
 \usepackage{blindtext}
 
+\setonlinefetch{false}
+
 \setname{Filippo Baroni}
 \setdescription{\bfseries Graduate student - Mathematics}
 
@@ -15,9 +17,21 @@
 \colorlet{body secondary}{gray!80!black}
 \colorlet{sidebar secondary}{icons!80!black}
 \colorlet{body section}{icons!50!black}
-\colorlet{body sectionrule}{body section!70}
+\colorlet{body sectionrule}{body section}
+\tikzset{cv/sectionrule/.append style={opacity=.7}}
 \colorlet{body}{black!90}
 \colorlet{body subsection}{icons!30!body}
+
+% Header decoration
+\usetikzlibrary{fadings,lindenmayersystems}
+\pgfdeclarelindenmayersystem{Dragon curve}{
+\symbol{H}{\pgflsystemdrawforward}
+\rule{F -> F+H}
+\rule{H -> F-H}
+}
+\tikzset{cv/header decoration/.code={
+\draw[header,line width=1pt,path fading=west,rounded corners=1pt][l-system={Dragon curve,anchor=north east,axiom=+F,step={\getheaderheight/26},angle=90,order=9}] (header.north east) lindenmayer system;
+}}
 
 \begin{document}
 \begin{sidebar}
@@ -59,8 +73,8 @@
 
 \section[\faEnvelope]{References}
 \begin{referencelist}
+\reference{Prof. Riccardo Benedetti}{\location{Università di Pisa}\email{riccardo.benedetti@unipi.it}\phone{+39 0502213277}}
 \reference{Prof. Roberto Frigerio}{\location{Università di Pisa}\email{frigerio@dm.unipi.it}\phone{+39 0502213561}}
-\reference{Prof. Riccardo Benedetti}{\location{Università di Pisa}\email{benedetti@dm.unipi.it}\phone{+39 0502213277}}
 \reference{Prof. Bruno Martelli}{\location{Università di Pisa}\email{bruno.martelli@unipi.it}\phone{+39  0502213231}}
 \end{referencelist}
 
@@ -102,7 +116,7 @@
 \section[\faUserTie]{Working Experiences}
 \begin{eventlist}
 \event{\when{April 2018}\where{Florence, Italy}}{Problem Coordinator}{European Girls' Mathematical Olympiad}
-\event{\when{July 2015}\where{Winchester, UK}}{Intern}{IBM United Kingdom}
+\event{\when{July 2015}\where{Hursley, UK}}{Intern}{IBM United Kingdom}
 \end{eventlist}
 
 \end{body}
