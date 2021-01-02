@@ -105,8 +105,8 @@
 
 % Header
 \tikzset{
-cv/name/.style={color=header,inner sep=0pt,scale=2,font={\large\bfseries\scshape}},
-cv/description/.style={color=header,inner xsep=0pt,font={\large}},
+cv/name/.style={text=header,inner sep=0pt,scale=2,font={\large\bfseries\scshape}},
+cv/description/.style={text=header,inner xsep=0pt,font={\large}},
 cv/photo/.pic={\fill[black] circle (.5*\cv@photo@diameter);},
 cv/header text/.pic={
 \node[cv/name,anchor=north west,align=left,text width={.5*(#1)}] (name) at (0,0) {\cv@name};
@@ -119,20 +119,26 @@ cv/header decoration/.code={},
 \ifbool{cv@photo@show}{
 \newlength{\w}
 \setlength{\w}{\dimexpr\textwidth-\cv@photo@diameter-\cv@margin\relax}
-\begin{scope}[local bounding box=full header]
-\pic [local bounding box=header text] at ($(current page.north west)+(\cv@margin,-\cv@margin)$) {cv/header text=\w};
-\path ([yshift=-1em]header text.south);
+\pic at ($(current page.north west)+(\cv@margin,-\cv@margin)$) {cv/header text=\w};
+\path ([yshift=-1em]description.south);
 \pic at ($(current page.north east)+(-\cv@margin-.5*\cv@photo@diameter,-.5*\cv@margin-.5*\cv@photo@diameter)$) {cv/photo};
 \path ($(current page.north)+(0,-\cv@photo@diameter-\cv@margin)$);
-\end{scope}
-\coordinate (header end) at (full header.south);
+\tikzmath{
+coordinate \p, \q;
+\p = (description.south);
+\py = \py -1em;
+\q = (current page.north);
+\qy = \qy - \cv@photo@diameter-\cv@margin;
+\headerendy = min(\py, \qy);
+}
+\coordinate (header end) at (0,\headerendy pt);
 }{
-\pic[local bounding box=header text] at ($(current page.north west)+(\cv@margin,-\cv@margin)$) {cv/header text={\textwidth}};
-\coordinate[below=1em of header text] (header end);
+\pic at ($(current page.north west)+(\cv@margin,-\cv@margin)$) {cv/header text={\textwidth}};
+\coordinate[below=1em of description] (header end);
 }
 \tikzmath{coordinate \p, \q; \p = (current page.north); \q = (header end);\h = \py-\qy;}
 \setlength{\cv@headerheight}{\h pt}\global\cv@headerheight=\cv@headerheight
-%\scoped[on background layer]\fill[headerbg] (current page.north west) rectangle (current page.east|-header end);
+\scoped[on background layer]\fill[headerbg] (current page.north west) rectangle (current page.east|-header end);
 \scoped[on background layer]\node[rectangle,fill=headerbg,minimum width=\paperwidth,minimum height=\cv@headerheight,anchor=north] (header) at (current page.north) {};
 \tikzset{cv/header decoration}
 \end{tikzpicture}
@@ -262,6 +268,8 @@ cv/rule/.style={draw=rule,line width=.5pt,densely dashed,path fading=east}
 \newenvironment{fieldlist}{}{\vspace{-\baselineskip}}
 
 \newcommand{\activity}[1]{\cv@infofield{\faCog}{#1}}
+
+\newcommand{\research}[1]{\cv@infofield{\faAtom}{#1}}
 
 % Skills
 \tikzset{
