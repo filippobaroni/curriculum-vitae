@@ -1,3 +1,6 @@
+## AtCoder and Codeforces cache
+*.cache
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
